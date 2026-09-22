@@ -8,7 +8,8 @@ library(tidyverse)
 library(nasapower)
 library(fixest)
 library(Metrics)
-validation=read.csv("\\2012-2013 Solar home electricity data v2.csv",skip=1) ##FILE PATH CAN ALTERED ACCORDINGLY
+################################Insert the local path to the downloaded Ausgrid dataset################################################
+validation=read.csv("INSERT FILE PATH HERE",skip=1)  #INSERT FILE PATH HERE
 ausgridV=validation%>%pivot_longer(cols =X0.30:X0.00,
                                names_to = "half_hour",
                                values_to = "kWh")%>%pivot_wider(names_from = "Consumption.Category",
@@ -75,7 +76,7 @@ ausgridF3=ausgridF2%>%mutate(e_gross=0.80*(GHI_C))
 ausgridF4=ausgridF3%>%filter(!is.na(e_gross))
 ###########################################ONE-WAY FIXED EFFECTS MODEL########################################################
 one_way_egross=feols(Gross_Generation~e_gross|Customer,data=ausgridF4,cluster=~Customer)
-summary(one_way_egross) #Within R^2, SLOPE COFFICIENT, RSME Can be extracted 
+summary(one_way_egross) 
 #######################################MEAN-AVERAGE ERROR CALCULATION##########################################################
 residuals22=resid(one_way_egross,type = "response")
 MAE22=mean(abs(residuals22))
@@ -88,3 +89,12 @@ print(mape_22)
 ############################################REGULAR R^2#######################################################################
 regularR=r2(one_way_egross, type = "r2")
 print(regularR)
+###########################################adjusted R^2#######################################################################
+adjR2=r2(one_way_egross, type="ar2")
+print(adjR2)
+############################################within R^2########################################################################
+withR2=r2(one_way_egross, type="wr2")
+print(withR2)
+#############################################RMSE#############################################################################
+rmseSOLAR=fitstat(one_way_egross, type="rmse")
+print(rmseSOLAR)
